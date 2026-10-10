@@ -24,10 +24,17 @@ class LoginActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        setContentView(R.layout.activity_login)
-
         auth = FirebaseAuth.getInstance()
         firestore = FirebaseFirestore.getInstance()
+
+        // Already signed in? Skip the login screen and open the dashboard.
+        if (auth.currentUser != null) {
+            startActivity(Intent(this, MainActivity::class.java))
+            finish()
+            return
+        }
+
+        setContentView(R.layout.activity_login)
 
         etEmail = findViewById(R.id.etEmail)
         etPassword = findViewById(R.id.etPassword)
@@ -138,13 +145,24 @@ class LoginActivity : AppCompatActivity() {
         )
 
         val fullName = preferences.getString("fullName", "") ?: ""
+
+        // Returning users (profile already exists in Firestore) have cleared
+        // prefs, so fullName is empty. Skip overwriting their existing profile.
+        if (fullName.isEmpty()) {
+            openMainActivity()
+            return
+        }
+
         val studentId = preferences.getString("studentId", "") ?: ""
         val department = preferences.getString("department", "CSE") ?: "CSE"
         val intake = preferences.getString("intake", "") ?: ""
         val section = preferences.getString("section", "") ?: ""
         val shift = preferences.getString("shift", "") ?: ""
+        val role = preferences.getString("role", "Student") ?: "Student"
+        val courses = preferences.getStringSet("courses", emptySet())
+            ?.toList() ?: emptyList()
 
-        val userData = hashMapOf(
+        val userData = hashMapOf<String, Any>(
             "fullName" to fullName,
             "email" to email,
             "studentId" to studentId,
@@ -152,7 +170,8 @@ class LoginActivity : AppCompatActivity() {
             "intake" to intake,
             "section" to section,
             "shift" to shift,
-            "role" to "Student",
+            "role" to role,
+            "courses" to courses,
             "emailVerified" to true,
             "createdAt" to FieldValue.serverTimestamp()
         )
@@ -161,26 +180,8 @@ class LoginActivity : AppCompatActivity() {
             .document(userId)
             .set(userData)
             .addOnSuccessListener {
-
                 preferences.edit().clear().apply()
-
-                btnLogin.isEnabled = true
-
-                Toast.makeText(
-                    this,
-                    "Login successful",
-                    Toast.LENGTH_SHORT
-                ).show()
-
-                val intent = Intent(this, MainActivity::class.java)
-                startActivity(intent)
-                finish()
-
-                /*
-                 * Later we will open MainActivity here.
-                 * For now, we stay on this screen.
-                 */
-
+                openMainActivity()
             }
             .addOnFailureListener { exception ->
 
@@ -192,6 +193,14 @@ class LoginActivity : AppCompatActivity() {
                     Toast.LENGTH_LONG
                 ).show()
             }
+    }
+
+    private fun openMainActivity() {
+        btnLogin.isEnabled = true
+        Toast.makeText(this, "Login successful", Toast.LENGTH_SHORT).show()
+        val intent = Intent(this, MainActivity::class.java)
+        startActivity(intent)
+        finish()
     }
 
     private fun resetPassword() {

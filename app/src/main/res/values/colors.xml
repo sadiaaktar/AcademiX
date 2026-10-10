@@ -8,4 +8,18 @@
     <color name="text_primary">#1D1B25</color>
     <color name="text_secondary">#6F6B7A</color>
     <color name="text_muted">#9692A0</color>
+
+    <!-- Quick access accent colors -->
+    <color name="accent_notice">#5B43C6</color>
+    <color name="accent_notice_soft">#ECE9FB</color>
+    <color name="accent_assignment">#3B82F6</color>
+    <color name="accent_assignment_soft">#E3EDFB</color>
+    <color name="accent_routine">#16A34A</color>
+    <color name="accent_routine_soft">#E6F4EA</color>
+    <color name="accent_courses">#EA580C</color>
+    <color name="accent_courses_soft">#FEF1E4</color>
+    <color name="accent_help">#DC2626</color>
+    <color name="accent_help_soft">#FCE8EF</color>
+    <color name="accent_messages">#0D9488</color>
+    <color name="accent_messages_soft">#E0F2F1</color>
 </resources>

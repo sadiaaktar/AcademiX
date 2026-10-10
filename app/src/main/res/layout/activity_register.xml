@@ -57,6 +57,56 @@
                 android:orientation="vertical"
                 android:padding="20dp">
 
+            <!-- Role -->
+            <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Registering as"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="13sp"
+                    android:textStyle="bold"/>
+
+            <RadioGroup
+                    android:id="@+id/rgRole"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginBottom="4dp"
+                    android:orientation="horizontal">
+
+                <RadioButton
+                        android:id="@+id/rbStudent"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:buttonTint="@color/brand_purple"
+                        android:checked="true"
+                        android:text="Student"
+                        android:textColor="@color/text_primary"
+                        android:textSize="14sp"/>
+
+                <RadioButton
+                        android:id="@+id/rbTeacher"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:buttonTint="@color/brand_purple"
+                        android:text="Teacher"
+                        android:textColor="@color/text_primary"
+                        android:textSize="14sp"/>
+
+                <RadioButton
+                        android:id="@+id/rbTA"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:buttonTint="@color/brand_purple"
+                        android:text="TA"
+                        android:textColor="@color/text_primary"
+                        android:textSize="14sp"/>
+
+            </RadioGroup>
+
             <!-- Full Name -->
             <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="match_parent"
@@ -230,6 +280,39 @@
                         android:textSize="15sp"/>
 
             </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Select Courses (students only) -->
+            <LinearLayout
+                    android:id="@+id/coursesSection"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:orientation="vertical">
+
+                <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Select your courses"
+                        android:textColor="@color/text_primary"
+                        android:textSize="14sp"
+                        android:textStyle="bold"/>
+
+                <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="Choose the courses you are taking this semester"
+                        android:textColor="@color/text_muted"
+                        android:textSize="12sp"/>
+
+                <LinearLayout
+                        android:id="@+id/coursesContainer"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:orientation="vertical"/>
+
+            </LinearLayout>
 
             <!-- Register Button -->
             <com.google.android.material.button.MaterialButton

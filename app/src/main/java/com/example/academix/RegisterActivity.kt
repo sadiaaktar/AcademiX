@@ -1,15 +1,20 @@
 package com.example.academix
 
 import android.content.Intent
+import android.content.res.ColorStateList
 import android.os.Bundle
+import android.view.View
 import android.widget.Button
+import android.widget.CheckBox
 import android.widget.EditText
+import android.widget.LinearLayout
+import android.widget.RadioGroup
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.SetOptions
 
 class RegisterActivity : AppCompatActivity() {
 
@@ -23,6 +28,10 @@ class RegisterActivity : AppCompatActivity() {
     private lateinit var etIntake: EditText
     private lateinit var etSection: EditText
     private lateinit var etShift: EditText
+
+    private lateinit var rgRole: RadioGroup
+    private lateinit var coursesSection: LinearLayout
+    private lateinit var coursesContainer: LinearLayout
 
     private lateinit var btnRegister: Button
     private lateinit var tvLogin: TextView
@@ -44,9 +53,20 @@ class RegisterActivity : AppCompatActivity() {
         etSection = findViewById(R.id.etSection)
         etShift = findViewById(R.id.etShift)
 
+        rgRole = findViewById(R.id.rgRole)
+        coursesSection = findViewById(R.id.coursesSection)
+        coursesContainer = findViewById(R.id.coursesContainer)
+
         btnRegister = findViewById(R.id.btnRegister)
         tvLogin = findViewById(R.id.tvLogin)
         tvBack = findViewById(R.id.tvBack)
+
+        buildCourseCheckboxes()
+
+        rgRole.setOnCheckedChangeListener { _, checkedId ->
+            val isStudent = checkedId == R.id.rbStudent
+            coursesSection.visibility = if (isStudent) View.VISIBLE else View.GONE
+        }
 
         btnRegister.setOnClickListener {
             registerUser()
@@ -61,6 +81,26 @@ class RegisterActivity : AppCompatActivity() {
         }
     }
 
+    private fun buildCourseCheckboxes() {
+        coursesContainer.removeAllViews()
+
+        val tint = ColorStateList.valueOf(
+            ContextCompat.getColor(this, R.color.brand_purple)
+        )
+        val textColor = ContextCompat.getColor(this, R.color.text_primary)
+
+        for (course in CourseCatalog.courses) {
+            val checkbox = CheckBox(this)
+            checkbox.text = "${course.courseCode} · ${course.title}"
+            checkbox.tag = course.courseCode
+            checkbox.textSize = 14f
+            checkbox.setTextColor(textColor)
+            checkbox.buttonTintList = tint
+            checkbox.setPadding(0, dp(4), 0, dp(4))
+            coursesContainer.addView(checkbox)
+        }
+    }
+
     private fun registerUser() {
 
         val fullName = etFullName.text.toString().trim()
@@ -70,6 +110,12 @@ class RegisterActivity : AppCompatActivity() {
         val intake = etIntake.text.toString().trim()
         val section = etSection.text.toString().trim()
         val shift = etShift.text.toString().trim()
+
+        val role = when (rgRole.checkedRadioButtonId) {
+            R.id.rbTeacher -> "Teacher"
+            R.id.rbTA -> "TA"
+            else -> "Student"
+        }
 
         // -----------------------------
         // Validate Full Name
@@ -82,7 +128,7 @@ class RegisterActivity : AppCompatActivity() {
         }
 
         // -----------------------------
-        // Validate Email
+        // Validate Email (depends on role)
         // -----------------------------
 
         if (email.isEmpty()) {
@@ -91,9 +137,11 @@ class RegisterActivity : AppCompatActivity() {
             return
         }
 
-        if (!isValidStudentEmail(email)) {
-            etEmail.error =
-                "Use your student email, for example 20245103181@cse.bubt.edu.bd"
+        if (!isValidEmailForRole(email, role)) {
+            etEmail.error = when (role) {
+                "Teacher" -> "Use your faculty email, e.g. asifur@bubt.edu.bd"
+                else -> "Use your student email, e.g. 20245103181@cse.bubt.edu.bd"
+            }
             etEmail.requestFocus()
             return
         }
@@ -160,6 +208,30 @@ class RegisterActivity : AppCompatActivity() {
             return
         }
 
+        // -----------------------------
+        // Validate Selected Courses (students only)
+        // -----------------------------
+
+        val selectedCourses = mutableListOf<String>()
+
+        if (role == "Student") {
+            for (i in 0 until coursesContainer.childCount) {
+                val checkbox = coursesContainer.getChildAt(i) as? CheckBox ?: continue
+                if (checkbox.isChecked) {
+                    selectedCourses.add(checkbox.tag as String)
+                }
+            }
+
+            if (selectedCourses.isEmpty()) {
+                Toast.makeText(
+                    this,
+                    "Select at least one course",
+                    Toast.LENGTH_LONG
+                ).show()
+                return
+            }
+        }
+
         // Extract information from student email
         val studentId = email.substringBefore("@")
         val department = "CSE"
@@ -204,15 +276,6 @@ class RegisterActivity : AppCompatActivity() {
                                     Toast.LENGTH_LONG
                                 ).show()
 
-                                /*
-                                 * We temporarily keep the registration
-                                 * information locally.
-                                 *
-                                 * After the user verifies the email,
-                                 * LoginActivity will create/update
-                                 * the Firestore profile.
-                                 */
-
                                 val preferences =
                                     getSharedPreferences(
                                         "academix_registration",
@@ -227,6 +290,8 @@ class RegisterActivity : AppCompatActivity() {
                                     .putString("intake", intake)
                                     .putString("section", section)
                                     .putString("shift", shift)
+                                    .putString("role", role)
+                                    .putStringSet("courses", selectedCourses.toSet())
                                     .apply()
 
                                 auth.signOut()
@@ -269,11 +334,13 @@ class RegisterActivity : AppCompatActivity() {
             }
     }
 
-    private fun isValidStudentEmail(email: String): Boolean {
-
-        val studentEmailPattern =
-            Regex("^[0-9]{11}@cse\\.bubt\\.edu\\.bd$")
-
-        return studentEmailPattern.matches(email)
+    private fun isValidEmailForRole(email: String, role: String): Boolean {
+        return when (role) {
+            "Teacher" -> Regex("^[a-zA-Z][a-zA-Z0-9._-]*@bubt\\.edu\\.bd$").matches(email)
+            else -> Regex("^[0-9]{11}@cse\\.bubt\\.edu\\.bd$").matches(email)
+        }
     }
+
+    private fun dp(value: Int): Int =
+        (value * resources.displayMetrics.density).toInt()
 }
