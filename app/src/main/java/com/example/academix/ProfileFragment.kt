@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import com.google.android.material.button.MaterialButton
@@ -24,6 +25,10 @@ class ProfileFragment : Fragment() {
     private lateinit var tvIntake: TextView
     private lateinit var tvSection: TextView
     private lateinit var tvShift: TextView
+    private lateinit var rowStudentId: LinearLayout
+    private lateinit var rowIntake: LinearLayout
+    private lateinit var rowSection: LinearLayout
+    private lateinit var rowShift: LinearLayout
     private lateinit var tvBack: TextView
     private lateinit var btnLogout: MaterialButton
 
@@ -45,6 +50,10 @@ class ProfileFragment : Fragment() {
         tvIntake = view.findViewById(R.id.tvIntake)
         tvSection = view.findViewById(R.id.tvSection)
         tvShift = view.findViewById(R.id.tvShift)
+        rowStudentId = view.findViewById(R.id.rowStudentId)
+        rowIntake = view.findViewById(R.id.rowIntake)
+        rowSection = view.findViewById(R.id.rowSection)
+        rowShift = view.findViewById(R.id.rowShift)
         tvBack = view.findViewById(R.id.tvBack)
         btnLogout = view.findViewById(R.id.btnLogout)
 
@@ -77,6 +86,7 @@ class ProfileFragment : Fragment() {
                 val intake = doc.getString("intake") ?: "-"
                 val section = doc.getString("section") ?: "-"
                 val shift = doc.getString("shift") ?: "-"
+                val role = doc.getString("role") ?: "Student"
 
                 tvName.text = name
                 tvEmail.text = email
@@ -86,6 +96,19 @@ class ProfileFragment : Fragment() {
                 tvSection.text = section
                 tvShift.text = shift
                 tvAvatar.text = name.firstOrNull()?.toString()?.uppercase() ?: "S"
+
+                // Teachers don't have student-specific info.
+                if (role == "Teacher") {
+                    rowStudentId.visibility = View.GONE
+                    rowIntake.visibility = View.GONE
+                    rowSection.visibility = View.GONE
+                    rowShift.visibility = View.GONE
+                } else {
+                    rowStudentId.visibility = View.VISIBLE
+                    rowIntake.visibility = View.VISIBLE
+                    rowSection.visibility = View.VISIBLE
+                    rowShift.visibility = View.VISIBLE
+                }
             }
     }
 }

@@ -65,6 +65,30 @@ class MainActivity : AppCompatActivity() {
             .commit()
     }
 
+    fun showTeacherNotices(teacherUid: String, teacherName: String) {
+        supportFragmentManager.beginTransaction()
+            .replace(
+                R.id.fragmentContainer,
+                TeacherNoticesFragment.newInstance(teacherUid, teacherName)
+            )
+            .addToBackStack(null)
+            .commit()
+    }
+
+    fun showPostNotice() {
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.fragmentContainer, PostNoticeFragment())
+            .addToBackStack(null)
+            .commit()
+    }
+
+    fun showEditNotice(notice: Notice) {
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.fragmentContainer, PostNoticeFragment.editInstance(notice))
+            .addToBackStack(null)
+            .commit()
+    }
+
     private fun replaceFragment(fragment: Fragment) {
         supportFragmentManager.beginTransaction()
             .replace(R.id.fragmentContainer, fragment)

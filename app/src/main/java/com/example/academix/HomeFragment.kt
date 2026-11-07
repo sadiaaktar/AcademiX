@@ -32,6 +32,7 @@ class HomeFragment : Fragment() {
     private lateinit var tvTodayLabel: TextView
 
     private var profileListener: ListenerRegistration? = null
+    private var currentRole: String = "Student"
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -54,8 +55,6 @@ class HomeFragment : Fragment() {
         todayClassesContainer = view.findViewById(R.id.todayClassesContainer)
         tvTodayEmpty = view.findViewById(R.id.tvTodayEmpty)
         tvTodayLabel = view.findViewById(R.id.tvTodayLabel)
-
-        renderTodayClasses()
 
         view.findViewById<View>(R.id.ivNotification).setOnClickListener {
             Toast.makeText(
@@ -106,8 +105,10 @@ class HomeFragment : Fragment() {
         profileListener = db.collection("users").document(uid)
             .addSnapshotListener { doc, error ->
                 if (error != null || doc == null) return@addSnapshotListener
+                currentRole = doc.getString("role") ?: "Student"
                 updateHeader(doc)
                 updateCourses(doc)
+                renderTodayClasses()
             }
     }
 
@@ -129,7 +130,14 @@ class HomeFragment : Fragment() {
     }
 
     private fun updateCourses(doc: DocumentSnapshot) {
-        val courseCodes = doc.get("courses") as? List<*> ?: emptyList<Any>()
+        // Teachers show the unique courses they teach (from their routine).
+        // Students show the courses they selected at registration.
+        val courseCodes: List<String> =
+            if (currentRole == "Teacher") {
+                RoutineCatalog.teacherCourseCodes()
+            } else {
+                (doc.get("courses") as? List<*> ?: emptyList<Any>()).map { it.toString() }
+            }
 
         coursesContainer.removeAllViews()
 
@@ -141,15 +149,14 @@ class HomeFragment : Fragment() {
         tvCoursesEmpty.visibility = View.GONE
 
         for (code in courseCodes) {
-            val codeStr = code.toString()
-            val title = CourseCatalog.titleOf(codeStr)
+            val title = CourseCatalog.titleOf(code)
 
             val item = layoutInflater.inflate(
                 R.layout.item_course,
                 coursesContainer,
                 false
             )
-            item.findViewById<TextView>(R.id.tvCourseCode).text = codeStr
+            item.findViewById<TextView>(R.id.tvCourseCode).text = code
             item.findViewById<TextView>(R.id.tvCourseTitle).text = title
             coursesContainer.addView(item)
         }
@@ -157,7 +164,7 @@ class HomeFragment : Fragment() {
 
     private fun renderTodayClasses() {
         val today = RoutineCatalog.today()
-        val schedule = RoutineCatalog.scheduleFor(today)
+        val schedule = RoutineCatalog.scheduleFor(today, currentRole)
 
         tvTodayLabel.text = RoutineCatalog.todayName()
 
@@ -181,8 +188,7 @@ class HomeFragment : Fragment() {
             item.findViewById<TextView>(R.id.tvCourseCode).text = entry.courseCode
             item.findViewById<TextView>(R.id.tvCourseTitle).text =
                 CourseCatalog.titleOf(entry.courseCode)
-            item.findViewById<TextView>(R.id.tvFacultyRoom).text =
-                "FC: ${entry.faculty}  ·  R: ${entry.room}"
+            item.findViewById<TextView>(R.id.tvFacultyRoom).text = entry.facultyRoomText()
             todayClassesContainer.addView(item)
         }
     }

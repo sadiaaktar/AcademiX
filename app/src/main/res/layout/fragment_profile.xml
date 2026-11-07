@@ -86,6 +86,7 @@
             android:padding="16dp">
 
             <LinearLayout
+                android:id="@+id/rowStudentId"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
@@ -134,6 +135,7 @@
             </LinearLayout>
 
             <LinearLayout
+                android:id="@+id/rowIntake"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
@@ -158,6 +160,7 @@
             </LinearLayout>
 
             <LinearLayout
+                android:id="@+id/rowSection"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
@@ -182,6 +185,7 @@
             </LinearLayout>
 
             <LinearLayout
+                android:id="@+id/rowShift"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"

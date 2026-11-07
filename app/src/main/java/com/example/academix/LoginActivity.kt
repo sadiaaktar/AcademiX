@@ -67,9 +67,9 @@ class LoginActivity : AppCompatActivity() {
             return
         }
 
-        if (!isValidStudentEmail(email)) {
+        if (!isValidUniversityEmail(email)) {
             etEmail.error =
-                "Use your student email, for example 20245103181@cse.bubt.edu.bd"
+                "Enter a valid university email"
             etEmail.requestFocus()
             return
         }
@@ -162,6 +162,10 @@ class LoginActivity : AppCompatActivity() {
         val courses = preferences.getStringSet("courses", emptySet())
             ?.toList() ?: emptyList()
 
+        // Clear temporary registration data right after reading it, so a
+        // failed login can never leak one account's data into another login.
+        preferences.edit().clear().apply()
+
         val userData = hashMapOf<String, Any>(
             "fullName" to fullName,
             "email" to email,
@@ -180,7 +184,6 @@ class LoginActivity : AppCompatActivity() {
             .document(userId)
             .set(userData)
             .addOnSuccessListener {
-                preferences.edit().clear().apply()
                 openMainActivity()
             }
             .addOnFailureListener { exception ->
@@ -213,9 +216,9 @@ class LoginActivity : AppCompatActivity() {
             return
         }
 
-        if (!isValidStudentEmail(email)) {
+        if (!isValidUniversityEmail(email)) {
             etEmail.error =
-                "Use your student email, for example 20245103181@cse.bubt.edu.bd"
+                "Enter a valid university email"
             etEmail.requestFocus()
             return
         }
@@ -242,11 +245,6 @@ class LoginActivity : AppCompatActivity() {
             }
     }
 
-    private fun isValidStudentEmail(email: String): Boolean {
-
-        val studentEmailPattern =
-            Regex("^[0-9]{11}@cse\\.bubt\\.edu\\.bd$")
-
-        return studentEmailPattern.matches(email)
-    }
+    private fun isValidUniversityEmail(email: String): Boolean =
+        EmailValidator.isValidUniversityEmail(email)
 }

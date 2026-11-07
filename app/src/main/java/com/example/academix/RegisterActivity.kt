@@ -4,6 +4,7 @@ import android.content.Intent
 import android.content.res.ColorStateList
 import android.os.Bundle
 import android.view.View
+import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.CheckBox
 import android.widget.EditText
@@ -13,6 +14,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import com.google.android.material.textfield.MaterialAutoCompleteTextView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
@@ -26,7 +28,7 @@ class RegisterActivity : AppCompatActivity() {
     private lateinit var etPassword: EditText
     private lateinit var etConfirmPassword: EditText
     private lateinit var etIntake: EditText
-    private lateinit var etSection: EditText
+    private lateinit var etSection: MaterialAutoCompleteTextView
     private lateinit var etShift: EditText
 
     private lateinit var rgRole: RadioGroup
@@ -52,6 +54,12 @@ class RegisterActivity : AppCompatActivity() {
         etIntake = findViewById(R.id.etIntake)
         etSection = findViewById(R.id.etSection)
         etShift = findViewById(R.id.etShift)
+
+        // Section dropdown (1-10)
+        val sections = (1..10).map { it.toString() }
+        etSection.setAdapter(
+            ArrayAdapter(this, android.R.layout.simple_list_item_1, sections)
+        )
 
         rgRole = findViewById(R.id.rgRole)
         coursesSection = findViewById(R.id.coursesSection)
@@ -336,8 +344,8 @@ class RegisterActivity : AppCompatActivity() {
 
     private fun isValidEmailForRole(email: String, role: String): Boolean {
         return when (role) {
-            "Teacher" -> Regex("^[a-zA-Z][a-zA-Z0-9._-]*@bubt\\.edu\\.bd$").matches(email)
-            else -> Regex("^[0-9]{11}@cse\\.bubt\\.edu\\.bd$").matches(email)
+            "Teacher" -> EmailValidator.isTeacher(email)
+            else -> EmailValidator.isStudentOrTA(email)
         }
     }
 

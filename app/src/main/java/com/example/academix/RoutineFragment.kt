@@ -10,14 +10,20 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 
 class RoutineFragment : Fragment() {
+
+    private lateinit var auth: FirebaseAuth
+    private lateinit var db: FirebaseFirestore
 
     private lateinit var dayContainer: LinearLayout
     private lateinit var classesContainer: LinearLayout
     private lateinit var tvEmpty: TextView
 
     private var selectedDay: String = RoutineCatalog.today()
+    private var currentRole: String = "Student"
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -25,6 +31,9 @@ class RoutineFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         val view = inflater.inflate(R.layout.fragment_routine, container, false)
+
+        auth = FirebaseAuth.getInstance()
+        db = FirebaseFirestore.getInstance()
 
         dayContainer = view.findViewById(R.id.dayContainer)
         classesContainer = view.findViewById(R.id.classesContainer)
@@ -35,9 +44,19 @@ class RoutineFragment : Fragment() {
         }
 
         buildDaySelector()
-        selectDay(selectedDay)
+        loadRole()
 
         return view
+    }
+
+    private fun loadRole() {
+        val uid = auth.currentUser?.uid ?: return
+
+        db.collection("users").document(uid).get()
+            .addOnSuccessListener { doc ->
+                currentRole = doc.getString("role") ?: "Student"
+                selectDay(selectedDay)
+            }
     }
 
     private fun buildDaySelector() {
@@ -91,7 +110,7 @@ class RoutineFragment : Fragment() {
     private fun renderSchedule(day: String) {
         classesContainer.removeAllViews()
 
-        val schedule = RoutineCatalog.scheduleFor(day)
+        val schedule = RoutineCatalog.scheduleFor(day, currentRole)
 
         if (schedule.isEmpty()) {
             tvEmpty.visibility = View.VISIBLE
@@ -108,8 +127,7 @@ class RoutineFragment : Fragment() {
             item.findViewById<TextView>(R.id.tvCourseCode).text = entry.courseCode
             item.findViewById<TextView>(R.id.tvCourseTitle).text =
                 CourseCatalog.titleOf(entry.courseCode)
-            item.findViewById<TextView>(R.id.tvFacultyRoom).text =
-                "FC: ${entry.faculty}  ·  R: ${entry.room}"
+            item.findViewById<TextView>(R.id.tvFacultyRoom).text = entry.facultyRoomText()
             classesContainer.addView(item)
         }
     }

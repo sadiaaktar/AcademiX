@@ -8,18 +8,25 @@ data class RoutineEntry(
     val room: String,
     val startTime: String,
     val endTime: String,
-    val day: String
-)
+    val day: String,
+    val section: String = ""
+) {
+    fun facultyRoomText(): String {
+        val base = if (faculty.isBlank()) room else "FC: $faculty  ·  R: $room"
+        return if (section.isBlank()) base else "$base  ·  Section $section"
+    }
+}
 
 /**
- * Hardcoded class routine for CSE Intake 53, Section 5.
+ * Hardcoded class routines, separated by role.
  * Later this can be moved to Firestore for dynamic schedules.
  */
 object RoutineCatalog {
 
     val days = listOf("SAT", "SUN", "MON", "TUE", "WED", "THR", "FRI")
 
-    private val entries = listOf(
+    // Student routine (CSE Intake 53, Section 5)
+    private val studentEntries = listOf(
         // SUN
         RoutineEntry("CSE 328", "NAT", "2416", "01:15 PM", "02:45 PM", "SUN"),
         RoutineEntry("CSE 403", "NMM", "2910", "02:45 PM", "04:15 PM", "SUN"),
@@ -38,8 +45,31 @@ object RoutineCatalog {
         RoutineEntry("CSE 404", "NMM", "2218", "11:15 AM", "12:45 PM", "THR")
     )
 
-    fun scheduleFor(day: String): List<RoutineEntry> =
-        entries.filter { it.day == day }
+    // Teacher routine (the teacher's own teaching schedule)
+    private val teacherEntries = listOf(
+        // SUN
+        RoutineEntry("CSE 327", "", "R-605 (B-3)", "08:15 AM", "09:45 AM", "SUN", section = "6"),
+        RoutineEntry("CSE 328", "", "R-417 (B-2)", "01:15 PM", "02:45 PM", "SUN", section = "5"),
+        // MON
+        RoutineEntry("CSE 327", "", "R-905 (B-3)", "08:15 AM", "09:45 AM", "MON", section = "5"),
+        // TUE
+        RoutineEntry("CSE 327", "", "R-302 (B-1)", "09:45 AM", "11:15 AM", "TUE", section = "5"),
+        // WED
+        RoutineEntry("CSE 327", "", "R-605 (B-3)", "02:45 PM", "04:15 PM", "WED", section = "6"),
+        // THR
+        RoutineEntry("CSE 328", "", "R-417 (B-2)", "01:15 PM", "02:45 PM", "THR", section = "6")
+    )
+
+    fun scheduleFor(day: String, role: String = "Student"): List<RoutineEntry> {
+        val entries = if (role == "Teacher") teacherEntries else studentEntries
+        return entries.filter { it.day == day }
+    }
+
+    fun teacherCourseCodes(): List<String> =
+        teacherEntries.map { it.courseCode }.distinct()
+
+    fun teacherSections(): List<String> =
+        teacherEntries.map { it.section }.filter { it.isNotBlank() }.distinct().sorted()
 
     fun today(): String = when (Calendar.getInstance().get(Calendar.DAY_OF_WEEK)) {
         Calendar.SUNDAY -> "SUN"

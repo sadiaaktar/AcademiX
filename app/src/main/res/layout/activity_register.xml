@@ -244,13 +244,14 @@
                         app:boxCornerRadiusBottomStart="12dp"
                         app:boxCornerRadiusTopEnd="12dp"
                         app:boxCornerRadiusTopStart="12dp"
+                        app:endIconMode="dropdown_menu"
                         app:startIconDrawable="@drawable/ic_grid">
 
-                    <com.google.android.material.textfield.TextInputEditText
+                    <com.google.android.material.textfield.MaterialAutoCompleteTextView
                             android:id="@+id/etSection"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:inputType="text"
+                            android:inputType="none"
                             android:maxLines="1"
                             android:textSize="15sp"/>
 
