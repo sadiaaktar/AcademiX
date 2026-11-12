@@ -6,8 +6,10 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
+import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.google.firebase.auth.FirebaseAuth
@@ -207,7 +209,50 @@ class TeacherNoticesFragment : Fragment() {
             item.findViewById<TextView>(R.id.tvTime).text = formatTimestamp(notice.timestampMillis)
             item.findViewById<TextView>(R.id.tvTitle).text = notice.title
             item.findViewById<TextView>(R.id.tvContent).text = notice.content
+
+            val attachmentRow = item.findViewById<View>(R.id.attachmentRow)
+            if (notice.hasAttachment()) {
+                attachmentRow.visibility = View.VISIBLE
+                val ivImage = item.findViewById<ImageView>(R.id.ivAttachmentImage)
+                val tvName = item.findViewById<TextView>(R.id.tvAttachmentName)
+
+                if (notice.attachmentType == "image") {
+                    val bitmap = AttachmentHelper.decodeBase64(notice.attachmentData)
+                    if (bitmap != null) {
+                        ivImage.visibility = View.VISIBLE
+                        ivImage.setImageBitmap(bitmap)
+                        ivImage.setOnClickListener {
+                            AttachmentHelper.showImageFullScreen(
+                                requireContext(),
+                                notice.attachmentData
+                            )
+                        }
+                    }
+                    tvName.visibility = View.GONE
+                } else {
+                    ivImage.visibility = View.GONE
+                    tvName.text = notice.attachmentName.ifBlank { "File" }
+                    tvName.visibility = View.VISIBLE
+                    tvName.setOnClickListener {
+                        openAttachment(notice)
+                    }
+                }
+            } else {
+                attachmentRow.visibility = View.GONE
+            }
+
             noticesContainer.addView(item)
+        }
+    }
+
+    private fun openAttachment(notice: Notice) {
+        val ok = AttachmentHelper.openFile(
+            requireContext(),
+            notice.attachmentData,
+            notice.attachmentName
+        )
+        if (!ok) {
+            Toast.makeText(requireContext(), "Cannot open attachment", Toast.LENGTH_SHORT).show()
         }
     }
 

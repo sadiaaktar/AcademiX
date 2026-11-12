@@ -12,8 +12,13 @@ data class Notice(
     val postedByUid: String = "",
     val postedByName: String = "",
     val section: String = "All",
+    val attachmentData: String = "",
+    val attachmentName: String = "",
+    val attachmentType: String = "",
     val timestampMillis: Long = 0L
 ) {
+    fun hasAttachment(): Boolean = attachmentData.isNotEmpty()
+
     companion object {
         fun fromDocument(id: String, data: Map<String, Any?>, timestampMillis: Long): Notice =
             Notice(
@@ -24,6 +29,9 @@ data class Notice(
                 postedByUid = data["postedByUid"] as? String ?: "",
                 postedByName = data["postedByName"] as? String ?: "",
                 section = data["section"] as? String ?: "All",
+                attachmentData = data["attachmentData"] as? String ?: "",
+                attachmentName = data["attachmentName"] as? String ?: "",
+                attachmentType = data["attachmentType"] as? String ?: "",
                 timestampMillis = timestampMillis
             )
     }

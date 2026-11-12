@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
@@ -175,6 +176,38 @@ class NoticeFragment : Fragment() {
         item.findViewById<TextView>(R.id.tvTitle).text = notice.title
         item.findViewById<TextView>(R.id.tvContent).text = notice.content
 
+        // Attachment
+        val attachmentRow = item.findViewById<View>(R.id.attachmentRow)
+        if (notice.hasAttachment()) {
+            attachmentRow.visibility = View.VISIBLE
+            val ivImage = item.findViewById<ImageView>(R.id.ivAttachmentImage)
+            val tvName = item.findViewById<TextView>(R.id.tvAttachmentName)
+
+            if (notice.attachmentType == "image") {
+                val bitmap = AttachmentHelper.decodeBase64(notice.attachmentData)
+                if (bitmap != null) {
+                    ivImage.visibility = View.VISIBLE
+                    ivImage.setImageBitmap(bitmap)
+                    ivImage.setOnClickListener {
+                        AttachmentHelper.showImageFullScreen(
+                            requireContext(),
+                            notice.attachmentData
+                        )
+                    }
+                }
+                tvName.visibility = View.GONE
+            } else {
+                ivImage.visibility = View.GONE
+                tvName.text = notice.attachmentName.ifBlank { "File" }
+                tvName.visibility = View.VISIBLE
+                tvName.setOnClickListener {
+                    openAttachment(notice)
+                }
+            }
+        } else {
+            attachmentRow.visibility = View.GONE
+        }
+
         // Edit / Delete actions (teacher's own notices only)
         item.findViewById<View>(R.id.noticeActions).visibility = View.VISIBLE
         item.findViewById<View>(R.id.btnEdit).setOnClickListener {
@@ -208,6 +241,17 @@ class NoticeFragment : Fragment() {
                     Toast.LENGTH_LONG
                 ).show()
             }
+    }
+
+    private fun openAttachment(notice: Notice) {
+        val ok = AttachmentHelper.openFile(
+            requireContext(),
+            notice.attachmentData,
+            notice.attachmentName
+        )
+        if (!ok) {
+            Toast.makeText(requireContext(), "Cannot open attachment", Toast.LENGTH_SHORT).show()
+        }
     }
 
     override fun onDestroyView() {
