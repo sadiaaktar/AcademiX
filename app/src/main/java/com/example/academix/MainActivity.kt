@@ -89,6 +89,34 @@ class MainActivity : AppCompatActivity() {
             .commit()
     }
 
+    fun showCreateAssignment() {
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.fragmentContainer, CreateAssignmentFragment())
+            .addToBackStack(null)
+            .commit()
+    }
+
+    fun showSubmissions(assignment: Assignment) {
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.fragmentContainer, SubmissionsFragment.newInstance(assignment))
+            .addToBackStack(null)
+            .commit()
+    }
+
+    fun showAssignmentDetail(assignment: Assignment) {
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.fragmentContainer, AssignmentDetailFragment.newInstance(assignment))
+            .addToBackStack(null)
+            .commit()
+    }
+
+    fun showEditAssignment(assignment: Assignment) {
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.fragmentContainer, CreateAssignmentFragment.editInstance(assignment))
+            .addToBackStack(null)
+            .commit()
+    }
+
     private fun replaceFragment(fragment: Fragment) {
         supportFragmentManager.beginTransaction()
             .replace(R.id.fragmentContainer, fragment)

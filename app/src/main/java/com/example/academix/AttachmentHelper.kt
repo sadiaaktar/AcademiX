@@ -28,6 +28,17 @@ object AttachmentHelper {
         }
     }
 
+    fun encodePdfBase64(context: Context, uri: Uri): String? {
+        return try {
+            val inputStream = context.contentResolver.openInputStream(uri) ?: return null
+            val bytes = inputStream.use { it.readBytes() }
+            if (bytes.size > 700 * 1024) return null
+            Base64.encodeToString(bytes, Base64.NO_WRAP)
+        } catch (e: Exception) {
+            null
+        }
+    }
+
     fun showImageFullScreen(context: Context, data: String) {
         val bitmap = decodeBase64(data) ?: return
 

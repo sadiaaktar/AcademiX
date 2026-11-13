@@ -22,4 +22,10 @@ object CourseCatalog {
 
     fun titleOf(code: String): String =
         courses.firstOrNull { it.courseCode == code }?.title ?: code
+
+    fun shortTitleOf(code: String): String = when (code) {
+        "CSE 327" -> "SE"
+        "CSE 328" -> "SE Lab"
+        else -> titleOf(code)
+    }
 }
